@@ -48,6 +48,32 @@ def get_user_id(insta_username):
 
 
 
+def get_user_info(insta_username):
+    user_id = get_user_id(insta_username)
+    if user_id == None:
+        print "User doesn't exist!!!"
+        exit()
+    request_url = (BASE_URL + 'users/%s?access_token=%s') % (user_id,ACCESS_TOKEN)
+    print "GET request url: %s" % (request_url)
+    user_info = requests.get(request_url).json()
+
+    if user_info["meta"]["code"] == 200:
+        if len(user_info["data"]):
+            print "Username: %s" % (user_info["data"]["username"])
+            print "Full Name: %s" % (user_info["data"]["fullname"])
+            print "Bio: %s" % (user_info["data"]["bio"])
+            print "Website: %s" % (user_info["data"]["website"])
+            print "Number of followers: %s" % (user_info["data"]["count"]["followed_by"])
+            print "Number of post: s" % (user_info["data"]["count"]["media"])
+            print "Number of people you are following: %s" % (user_info["data"]["count"]["follows"])
+        else:
+            print "No data is available for this particular user!!!"
+    else:
+        print "INVALID REQUEST!!!Please try again"
+
+
+
+
 def start_bot():
     while True:
         print '\n'
