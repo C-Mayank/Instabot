@@ -1,5 +1,5 @@
-#importing 'requests' package
-import requests
+#importing 'requests' and 'urllib' packages
+import requests,urllib
 
 #define access token of your account
 ACCESS_TOKEN = '5683656431.a4b1c44.182dcfe7f7124b2d9b873838cfa886bc'
@@ -14,6 +14,7 @@ BASE_URL = 'https://api.instagram.com/v1/'
 def self_info():
     #get the request url
     request_url = (BASE_URL + 'users/self/?access_token=%s') % (ACCESS_TOKEN)
+
     #print the request url
     print "GET request url: %s" % (request_url)
     user_info = requests.get(request_url).json()
@@ -43,6 +44,7 @@ def self_info():
 def get_user_id(insta_username):
     #get request url
     request_url = (BASE_URL + 'users/search?q=%s&access_token=%s') % (insta_username,ACCESS_TOKEN)
+
     #print the request url
     print "GET request url: %s" % (request_url)
     user_info = requests.get(request_url).json()
@@ -66,12 +68,15 @@ def get_user_id(insta_username):
 def get_user_info(insta_username):
     #define user id
     user_id = get_user_id(insta_username)
+
     #check if there is userid or not
     if user_id == None:
         print "User doesn't exist!!!"
         exit()
+
     #define request url
     request_url = (BASE_URL + 'users/%s?access_token=%s') % (user_id,ACCESS_TOKEN)
+
     #print the request url
     print "GET request url: %s" % (request_url)
     user_info = requests.get(request_url).json()
@@ -97,52 +102,72 @@ def get_user_info(insta_username):
 
 
 
-#function to get your own posts
+#function to get your recent posts
 def get_own_post():
     #get request url
     request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s') % (ACCESS_TOKEN)
+
     #print the request url
     print "GET request url: %s" % (request_url)
+
     #define own media
     own_media = requests.get(request_url).json()
+
     #check if request is valid
     if own_media["meta"]["code"] == 200:
         #check if own_media has data
         if len(own_media["data"]):
-            return own_media["data"][0]["id"]
+            #define name of the image
+            image_name = own_media["data"][0]["id"] + ".jpeg"
+            #define url of the image
+            image_url = own_media["data"][0]["images"]["standard_resolution"]["url"]
+            #retreive the image post
+            urllib.urlretrieve(image_url,image_name)
+            #print an appropriate message
+            print "Your image has been downloaded!!!"
         else:
             print "Post does not exist!"
     else:
         print "INVALID REQUEST!!!!Please try again"
-    return None
 
 
 
-#function to get an user's post
+#function to get an user's most recent post
 def get_users_post(insta_username):
     #retrieve an user id
     user_id = get_user_id(insta_username)
+
     #check if userid is none
     if user_id == None:
         #print the user does not exist
         print "User does not exist!!!"
         exit()
+
     #define request url
     request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id,ACCESS_TOKEN)
+
     #display request url
     print "GET request url: %s" % (request_url)
+
     #define a variable for media
     user_media = requests.get(request_url).json()
+
     #check if request is valid
     if user_media["meta"]["code"] == 200:
         #check if user_media has data
         if len(user_media["data"]):
-            return user_media["data"][0]["id"]
+            #define the name for the image
+            image_name= user_media["data"][0]["id"] + ".jpeg"
+            #define the url for the image
+            image_url = user_media["data"][0]["images"]["standard_resolution"]["url"]
+            #retrieve the image
+            urllib.urlretrieve(image_url, image_name)
+            #print a suitable message
+            print "The image has been downloaded!!!"
         else:
             print "No recent posts!!!"
     else:
         print "INVALID REQUEST"
-    return None
 
 
 
@@ -152,6 +177,7 @@ def start_bot():
     while True:
         #greeting the user
         print "\nHey! Welcome to InstaBot\n"
+
         #displaying the menu
         print "Menu:-\n"
         print "a. Retrieve your own details\n"
@@ -162,6 +188,7 @@ def start_bot():
 
         #accept user input
         choice = raw_input("Enter you choice: ")
+
         #if user chooses option (a)
         if choice == "a":
             #print the details of your own account
@@ -174,16 +201,14 @@ def start_bot():
             get_user_info(insta_username)
         #if user chooses option (c)
         elif choice =="c":
-            #retrieve your own post
+            #retrieve your recent post
             get_own_post()
         #if user chooses option (d)
         elif choice == "d":
             #accept username from the user
             insta_username = raw_input("Enter the username of the user: ")
-            #retrieve other user's post id
-            id = get_users_post(insta_username)
-            #display post id
-            print "Post ID: " + id
+            #retrieve the most recent post of another user
+            get_users_post(insta_username)
         #if user chooses option (c)
         elif choice == "e":
             #terminate the project processing
@@ -195,5 +220,5 @@ def start_bot():
 
 
 
-#calling the start_bot function
+#starting the processing
 start_bot()
