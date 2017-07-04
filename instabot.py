@@ -33,6 +33,7 @@ def self_info():
         else:
             print "User does not exist!!!"
     else:
+        #display invalid request
         print "INVALID REQUEST!!!"
         print "Please check the request"
 
@@ -96,6 +97,55 @@ def get_user_info(insta_username):
 
 
 
+#function to get your own posts
+def get_own_post():
+    #get request url
+    request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s') % (ACCESS_TOKEN)
+    #print the request url
+    print "GET request url: %s" % (request_url)
+    #define own media
+    own_media = requests.get(request_url).json()
+    #check if request is valid
+    if own_media["meta"]["code"] == 200:
+        #check if own_media has data
+        if len(own_media["data"]):
+            return own_media["data"][0]["id"]
+        else:
+            print "Post does not exist!"
+    else:
+        print "INVALID REQUEST!!!!Please try again"
+    return None
+
+
+
+#function to get an user's post
+def get_users_post(insta_username):
+    #retrieve an user id
+    user_id = get_user_id(insta_username)
+    #check if userid is none
+    if user_id == None:
+        #print the user does not exist
+        print "User does not exist!!!"
+        exit()
+    #define request url
+    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id,ACCESS_TOKEN)
+    #display request url
+    print "GET request url: %s" % (request_url)
+    #define a variable for media
+    user_media = requests.get(request_url).json()
+    #check if request is valid
+    if user_media["meta"]["code"] == 200:
+        #check if user_media has data
+        if len(user_media["data"]):
+            return user_media["data"][0]["id"]
+        else:
+            print "No recent posts!!!"
+    else:
+        print "INVALID REQUEST"
+    return None
+
+
+
 #function to start the project
 def start_bot():
     #continue until the condition becomes false
@@ -104,24 +154,38 @@ def start_bot():
         print "\nHey! Welcome to InstaBot\n"
         #displaying the menu
         print "Menu:-\n"
-        print "a.Get your own details\n"
-        print "b.Get details of a user by username\n"
-        print "c.Exit\n"
+        print "a. Retrieve your own details\n"
+        print "b. Retrieve details of a user\n"
+        print "c. Retrieve your own recent posts\n"
+        print "d. Retrieve the recent post of an user\n"
+        print "e. Exit\n"
 
         #accept user input
-        choice=raw_input("Enter you choice: ")
+        choice = raw_input("Enter you choice: ")
         #if user chooses option (a)
-        if choice=="a":
+        if choice == "a":
             #print the details of your own account
             self_info()
         #if user chooses option (b)
-        elif choice=="b":
+        elif choice == "b":
             #accept username from the user
             insta_username = raw_input("Enter the username of the user: ")
             #display the user details
             get_user_info(insta_username)
         #if user chooses option (c)
-        elif choice=="c":
+        elif choice =="c":
+            #retrieve your own post
+            get_own_post()
+        #if user chooses option (d)
+        elif choice == "d":
+            #accept username from the user
+            insta_username = raw_input("Enter the username of the user: ")
+            #retrieve other user's post id
+            id = get_users_post(insta_username)
+            #display post id
+            print "Post ID: " + id
+        #if user chooses option (c)
+        elif choice == "e":
             #terminate the project processing
             exit()
         #if user chooses any other option
