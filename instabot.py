@@ -170,6 +170,20 @@ def get_users_post(insta_username):
         print "INVALID REQUEST"
 
 
+#function to retrieve the liked post
+def media_liked():
+    request_url = (BASE_URL + 'users/self/media/liked?access_token=%s') % (ACCESS_TOKEN)
+    print "GET request url: %s" % (request_url)
+    user_media = requests.get(request_url).json()
+    if user_media["meta"]["code"] == 200:
+        if len(user_media["data"]):
+            print "Media liked: " + user_media["data"][0]["images"]["standard_resolution"]["url"]
+        else:
+            print "No post found"
+    else:
+        print "INVAlID REQUEST"
+
+
 
 #function to start the project
 def start_bot():
@@ -184,7 +198,9 @@ def start_bot():
         print "b. Retrieve details of a user\n"
         print "c. Retrieve your own recent posts\n"
         print "d. Retrieve the recent post of an user\n"
-        print "e. Exit\n"
+        print "e. Retrieve the your recently liked post\n"
+        print "f. Exit\n"
+
 
         #accept user input
         choice = raw_input("Enter you choice: ")
@@ -210,9 +226,11 @@ def start_bot():
             #retrieve the most recent post of another user
             get_users_post(insta_username)
         #if user chooses option (c)
-        elif choice == "e":
+        elif choice == "f":
             #terminate the project processing
             exit()
+        elif choice == "e":
+            media_liked()
         #if user chooses any other option
         else:
             #print the message that the choice is invalid
