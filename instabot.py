@@ -172,16 +172,25 @@ def get_users_post(insta_username):
 
 #function to retrieve the liked post
 def media_liked():
+    #define the request url
     request_url = (BASE_URL + 'users/self/media/liked?access_token=%s') % (ACCESS_TOKEN)
+    #print the request url
     print "GET request url: %s" % (request_url)
+    #define user_media
     user_media = requests.get(request_url).json()
+    #if request status is OK
     if user_media["meta"]["code"] == 200:
+        #check if user_media has data
         if len(user_media["data"]):
+            #display the liked media
             print "Media liked: " + user_media["data"][0]["images"]["standard_resolution"]["url"]
         else:
+            #display that no posts found
             print "No post found"
     else:
+        #print that the request is invalid
         print "INVAlID REQUEST"
+
 
 
 #function to retreive the post id
@@ -240,6 +249,30 @@ def like_a_post(insta_username):
 
 
 
+#function to post a comment
+def post_a_comment(insta_username):
+    #retrieve media id
+    media_id = get_post_id(insta_username)
+    #accept comment text from the user
+    comment_text = raw_input("Your comment: ")
+    #define the payload
+    payload = {"access_token": ACCESS_TOKEN, "text": comment_text}
+    #define the request url
+    request_url = (BASE_URL + 'media/%s/comments') % (media_id)
+    #print request url
+    print "POST request url: %s" % (request_url)
+    #make a comment
+    make_comment = requests.post(request_url, payload).json()
+    #check if make_comment status is OK
+    if make_comment["meta"]["code"] == 200:
+        #print comment successful
+        print "Successfully added a new comment!!!"
+    else:
+        #print unsuccessful comment
+        print "Unable to add comment. Try again!!!"
+
+
+
 #function to start the project
 def start_bot():
     #continue until the condition becomes false
@@ -253,8 +286,10 @@ def start_bot():
         print "b. Retrieve details of a user\n"
         print "c. Retrieve your own recent posts\n"
         print "d. Retrieve the recent post of an user\n"
-        print "e. Retrieve the your recently liked post\n"
-        print "f. Exit\n"
+        print "e. Retrieve your recently liked post\n"
+        print "f. Like a recent post\n"
+        print "g. Make a comment on a recent post\n"
+        print "h. Exit\n"
 
 
         #accept user input
@@ -280,12 +315,26 @@ def start_bot():
             insta_username = raw_input("Enter the username of the user: ")
             #retrieve the most recent post of another user
             get_users_post(insta_username)
-        #if user chooses option (c)
+        #if user chooses option (e)
+        elif choice == "e":
+            #retrieve the liked media
+            media_liked()
+        #if user chooses option (f)
         elif choice == "f":
+            #accept the name from the user
+            insta_username = raw_input("Enter the username: ")
+            #like a post
+            like_a_post(insta_username)
+        #if user chooses option (g)
+        elif choice == "g":
+            #accept the name from the user
+            insta_username = raw_input("Enter the username: ")
+            #post a comment
+            post_a_comment(insta_username)
+        #if user chooses option (c)
+        elif choice == "h":
             #terminate the project processing
             exit()
-        elif choice == "e":
-            media_liked()
         #if user chooses any other option
         else:
             #print the message that the choice is invalid
