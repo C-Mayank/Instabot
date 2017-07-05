@@ -184,6 +184,61 @@ def media_liked():
         print "INVAlID REQUEST"
 
 
+#function to retreive the post id
+def get_post_id(insta_username):
+    #retreiving the user id
+    user_id = get_user_id(insta_username)
+    #check if user id is None
+    if user_id == None:
+        #display that user doesn't exist
+        print "User does not exist!!!"
+        exit()
+    #define a request url
+    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, ACCESS_TOKEN)
+    #print the get request url
+    print "GET request url : %s" % (request_url)
+    user_media = requests.get(request_url).json()
+
+    #check if request status is OK
+    if user_media["meta"]["code"] == 200:
+        #check if user_media has data
+        if len(user_media["data"]):
+            #return the post id
+            return user_media["data"][0]["id"]
+        #if user_media doesn't has data
+        else:
+            #display an appropriate message
+            print "There is no recent post of the user!!!"
+            exit()
+    #if request status is not OK
+    else:
+        #display invalid reuest
+        print "INVALID REQUEST!!!"
+        exit()
+
+
+
+#function to like a post
+def like_a_post(insta_username):
+    #retreive a media id
+    media_id = get_post_id(insta_username)
+    #define request url
+    request_url = (BASE_URL + 'media/%s/likes') % (media_id)
+    #define payload
+    payload = {"access_token": ACCESS_TOKEN}
+    #display the request url
+    print "POST request url: %s" % (request_url)
+    #post a like
+    post_a_like = requests.post(request_url, payload).json()
+    #check if http status is OK
+    if post_a_like["meta"]["code"] == 200:
+        #display that you liked successfully
+        print "You liked successfully"
+    else:
+        #print that like was unsuccessful
+        print "Your like was unsuccessful. Try again later!!!"
+
+
 
 #function to start the project
 def start_bot():
