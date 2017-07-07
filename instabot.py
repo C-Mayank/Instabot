@@ -1,6 +1,8 @@
 #importing 'requests' and 'urllib' packages
 import requests,urllib
 
+from collections import Counter
+
 #define access token of your account
 ACCESS_TOKEN = '5683656431.a4b1c44.182dcfe7f7124b2d9b873838cfa886bc'
 
@@ -144,7 +146,7 @@ def get_users_post(insta_username):
         exit()
 
     #define request url
-    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id,ACCESS_TOKEN)
+    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, ACCESS_TOKEN)
 
     #display request url
     print "GET request url: %s" % (request_url)
@@ -271,6 +273,84 @@ def post_a_comment(insta_username):
         #print unsuccessful comment
         print "Unable to add comment. Try again!!!"
 
+#function to get the list of comments
+def get_comment_list(insta_username):
+    #retrieve the media id
+    media_id = get_post_id(insta_username)
+    #check if media id does not exist
+    if media_id == None:
+        #print suitable message
+        print "No post found!!!"
+        #exit the function
+        exit()
+    #define request url
+    request_url = (BASE_URL + 'media/%s/comments/?access_token=%s') % (media_id, ACCESS_TOKEN)
+    #print the get request
+    print "GET request url: %s" % (request_url)
+    #define user media
+    user_media = requests.get(request_url).json()
+    #check if request status is OK
+    if user_media["meta"]["code"] == 200:
+        #check if user_media has data
+        if len(user_media["data"]):
+            #print the comments
+            print "Comments: %s" %(user_media["data"][0]["text"])
+        #if user_media does not have data
+        else:
+            #display that no comments found
+            print "No comments found!!!"
+    #if request status is not OK
+    else:
+        #display invalid request
+        print "INVALID REQUEST!!!"
+
+
+
+def get_user_interest(insta_username):
+    user_id = get_user_id(insta_username)
+    if user_id == None:
+        print "No user exist"
+        exit()
+    f1 = open("htags.txt", "w")
+    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, ACCESS_TOKEN)
+    print "GET request url: %s" % (request_url)
+    user_media = requests.get(request_url).json()
+    if user_media["meta"]["code"] == 200:
+        if len(user_media["data"]):
+            if user_media["data"][0]["caption"]:
+                caption = user_media["data"][0]["caption"]["text"]
+                print "Caption: " + caption.strip("")
+                hash_tags = caption.split("#")
+                print "HashTags: %s" % (hash_tags)
+
+                f = open("htags.txt", "a")
+                for item in hash_tags:
+                    f.write("%s," %item)
+                f.close()
+            else:
+                print "No caption found!!!"
+            file()
+        else:
+            print "No Data"
+    else:
+        print "INVALID REQUEST!!!"
+
+
+
+
+def file():
+    fr = open("htags.txt", "r")
+    read = fr.read()
+    print read
+    l = read.split(",")
+    print l
+    c = Counter(l)
+    print c
+    for key, value in c.iteritems():
+        if value == 1:
+            print key
+
+
 
 
 #function to start the project
@@ -289,7 +369,9 @@ def start_bot():
         print "e. Retrieve your recently liked post\n"
         print "f. Like a recent post\n"
         print "g. Make a comment on a recent post\n"
-        print "h. Exit\n"
+        print "h. Retrieve user's interest\n"
+        print "i. Retrieve the list of comments\n"
+        print "j. Exit\n"
 
 
         #accept user input
@@ -331,8 +413,14 @@ def start_bot():
             insta_username = raw_input("Enter the username: ")
             #post a comment
             post_a_comment(insta_username)
-        #if user chooses option (c)
         elif choice == "h":
+            insta_username = raw_input("Enter the username: ")
+            get_user_interest(insta_username)
+        elif choice == "i":
+            insta_username = raw_input("Enter the username: ")
+            get_comment_list(insta_username)
+        #if user chooses option (j)
+        elif choice == "j":
             #terminate the project processing
             exit()
         #if user chooses any other option
