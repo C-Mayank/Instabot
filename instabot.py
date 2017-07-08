@@ -1,7 +1,17 @@
 #importing 'requests' and 'urllib' packages
 import requests,urllib
 
-from collections import Counter
+#import 're' package
+import re
+
+#importing 'ner' and 'taxonomy' packages
+from paralleldots import ner,taxonomy
+
+#importing word cloud
+from wordcloud import WordCloud
+
+#importing 'matplotlib' package
+import matplotlib.pyplot as plt
 
 #define access token of your account
 ACCESS_TOKEN = '5683656431.a4b1c44.182dcfe7f7124b2d9b873838cfa886bc'
@@ -28,8 +38,6 @@ def self_info():
             #print the details
             print "Username: %s" %(user_info["data"]["username"])
             print "Full Name: %s" % (user_info["data"]["full_name"])
-            print "Bio: %s" % (user_info["data"]["bio"])
-            print "Website: %s" % (user_info["data"]["website"])
             print "Number of followers: %s" % (user_info["data"]["counts"]["followed_by"])
             print "Number of post: %s" % (user_info["data"]["counts"]["media"])
             print "Number of people you are following: %s" % (user_info["data"]["counts"]["follows"])
@@ -39,6 +47,7 @@ def self_info():
         #display invalid request
         print "INVALID REQUEST!!!"
         print "Please check the request"
+
 
 
 
@@ -66,6 +75,7 @@ def get_user_id(insta_username):
 
 
 
+
 #function to retreive user information
 def get_user_info(insta_username):
     #define user id
@@ -90,8 +100,6 @@ def get_user_info(insta_username):
             #print the details of the user
             print "Username: %s" % (user_info["data"]["username"])
             print "Full Name: %s" % (user_info["data"]["full_name"])
-            print "Bio: %s" % (user_info["data"]["bio"])
-            print "Website: %s" % (user_info["data"]["website"])
             print "Number of followers: %s" % (user_info["data"]["counts"]["followed_by"])
             print "Number of post: %s" % (user_info["data"]["counts"]["media"])
             print "Number of people you are following: %s" % (user_info["data"]["counts"]["follows"])
@@ -101,6 +109,7 @@ def get_user_info(insta_username):
     else:
         #show invalid request message
         print "INVALID REQUEST!!!Please try again"
+
 
 
 
@@ -131,6 +140,7 @@ def get_own_post():
             print "Post does not exist!"
     else:
         print "INVALID REQUEST!!!!Please try again"
+
 
 
 
@@ -172,14 +182,19 @@ def get_users_post(insta_username):
         print "INVALID REQUEST"
 
 
+
+
 #function to retrieve the liked post
 def media_liked():
     #define the request url
     request_url = (BASE_URL + 'users/self/media/liked?access_token=%s') % (ACCESS_TOKEN)
+
     #print the request url
     print "GET request url: %s" % (request_url)
+
     #define user_media
     user_media = requests.get(request_url).json()
+
     #if request status is OK
     if user_media["meta"]["code"] == 200:
         #check if user_media has data
@@ -195,17 +210,21 @@ def media_liked():
 
 
 
+
 #function to retreive the post id
 def get_post_id(insta_username):
     #retreiving the user id
     user_id = get_user_id(insta_username)
+
     #check if user id is None
     if user_id == None:
         #display that user doesn't exist
         print "User does not exist!!!"
         exit()
+
     #define a request url
     request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, ACCESS_TOKEN)
+
     #print the get request url
     print "GET request url : %s" % (request_url)
     user_media = requests.get(request_url).json()
@@ -229,18 +248,24 @@ def get_post_id(insta_username):
 
 
 
+
 #function to like a post
 def like_a_post(insta_username):
     #retreive a media id
     media_id = get_post_id(insta_username)
+
     #define request url
     request_url = (BASE_URL + 'media/%s/likes') % (media_id)
+
     #define payload
     payload = {"access_token": ACCESS_TOKEN}
+
     #display the request url
     print "POST request url: %s" % (request_url)
+
     #post a like
     post_a_like = requests.post(request_url, payload).json()
+
     #check if http status is OK
     if post_a_like["meta"]["code"] == 200:
         #display that you liked successfully
@@ -251,20 +276,27 @@ def like_a_post(insta_username):
 
 
 
+
 #function to post a comment
 def post_a_comment(insta_username):
     #retrieve media id
     media_id = get_post_id(insta_username)
+
     #accept comment text from the user
     comment_text = raw_input("Your comment: ")
+
     #define the payload
     payload = {"access_token": ACCESS_TOKEN, "text": comment_text}
+
     #define the request url
     request_url = (BASE_URL + 'media/%s/comments') % (media_id)
+
     #print request url
     print "POST request url: %s" % (request_url)
+
     #make a comment
     make_comment = requests.post(request_url, payload).json()
+
     #check if make_comment status is OK
     if make_comment["meta"]["code"] == 200:
         #print comment successful
@@ -273,28 +305,38 @@ def post_a_comment(insta_username):
         #print unsuccessful comment
         print "Unable to add comment. Try again!!!"
 
+
+
+
 #function to get the list of comments
 def get_comment_list(insta_username):
     #retrieve the media id
     media_id = get_post_id(insta_username)
+
     #check if media id does not exist
     if media_id == None:
         #print suitable message
         print "No post found!!!"
         #exit the function
         exit()
+
     #define request url
     request_url = (BASE_URL + 'media/%s/comments/?access_token=%s') % (media_id, ACCESS_TOKEN)
+
     #print the get request
     print "GET request url: %s" % (request_url)
+
     #define user media
     user_media = requests.get(request_url).json()
+
     #check if request status is OK
     if user_media["meta"]["code"] == 200:
         #check if user_media has data
         if len(user_media["data"]):
-            #print the comments
-            print "Comments: %s" %(user_media["data"][0]["text"])
+            #itration for retreiving all the comments of a particular post
+            for x in range(0, len(user_media["data"])):
+                #print the comments
+                print "Comments: %s" %(user_media["data"][x]["text"])
         #if user_media does not have data
         else:
             #display that no comments found
@@ -306,49 +348,107 @@ def get_comment_list(insta_username):
 
 
 
-def get_user_interest(insta_username):
-    user_id = get_user_id(insta_username)
-    if user_id == None:
-        print "No user exist"
-        exit()
-    f1 = open("htags.txt", "w")
-    request_url = (BASE_URL + 'users/%s/media/recent/?access_token=%s') % (user_id, ACCESS_TOKEN)
-    print "GET request url: %s" % (request_url)
-    user_media = requests.get(request_url).json()
-    if user_media["meta"]["code"] == 200:
-        if len(user_media["data"]):
-            if user_media["data"][0]["caption"]:
-                caption = user_media["data"][0]["caption"]["text"]
-                print "Caption: " + caption.strip("")
-                hash_tags = caption.split("#")
-                print "HashTags: %s" % (hash_tags)
 
-                f = open("htags.txt", "a")
-                for item in hash_tags:
-                    f.write("%s," %item)
-                f.close()
-            else:
-                print "No caption found!!!"
-            file()
+#function to retrieve user's interest & plot word cloud
+def get_user_interest():
+    # define the request url
+    request_url = (BASE_URL + 'users/self/media/recent/?access_token=%s') % (ACCESS_TOKEN)
+
+    # print the request url
+    print "GET request url: %s" % (request_url)
+
+    # define user media
+    user_media = requests.get(request_url).json()
+    string = ""
+
+    # check if request status is OK
+    if user_media["meta"]["code"] == 200:
+        # check if user media has data
+        if len(user_media["data"]):
+            #open a file in write mode to clear existing data
+            f = open("hashtags.txt", "w")
+            #iterate through user media
+            for x in range(0, len(user_media["data"])):
+                if user_media["data"][x]["caption"]:
+                    #retrieve caption
+                    caption = user_media["data"][x]["caption"]["text"]
+                    #print the caption
+                    print "Caption: %s" % (caption)
+                    #define hashtags
+                    hashtags = re.findall(r"#(\w+)",caption)
+                    #print hashtags
+                    print "Hashtags: %s" % (hashtags)
+                    #iterate through hashtags
+                    for item in hashtags:
+                        string += item + " "
+                    #print string
+                    print "String: %s" % (string)
+                    #explicitly convert to string
+                    text = str(string)
+                    #open the file to write data
+                    f1 = open("hashtags.txt", "w")
+                    #write the data
+                    f1.write(text)
+                    #close the file object
+                    f1.close()
+                    #call file function
+                    file()
+                else:
+                    print "No caption found!!!"
+        #if no data found
         else:
-            print "No Data"
+            #display an appropriate message
+            print "No Data Found!!!"
+    #if request status is not OK
     else:
+        #display invalid request
         print "INVALID REQUEST!!!"
 
 
 
 
+#function to read the file & use paralleldots api's
 def file():
-    fr = open("htags.txt", "r")
-    read = fr.read()
-    print read
-    l = read.split(",")
-    print l
-    c = Counter(l)
-    print c
-    for key, value in c.iteritems():
-        if value == 1:
-            print key
+    #open the file for reading
+    f = open("hashtags.txt", "r")
+
+    #read data from the file
+    read = f.read()
+
+    #print data retrieved from the file
+    print "Reading from the file: %s" % (read)
+
+    #using entity extraction api
+    interest = ner(read)
+    print "Interest: %s" % (interest['entities'])
+    for x in range(0, len(interest['entities'])):
+        entity = interest['entities'][x][0]
+    print entity
+
+    words =[]
+
+    #using taxonomy api
+    keywords = taxonomy(str(entity))
+    key_words = keywords['tags']
+    print "Taxonomy Tags: %s" % (key_words)
+    for x in range(0, len(key_words)):
+        words.append(key_words[x][0])
+    print "Words: %s" % (words)
+
+    word = ""
+    for item in words:
+        word += item + " "
+    print "Word: %s" % (word)
+
+    #create word cloud
+    word_cloud = WordCloud(background_color='black', width=1200, height=1000).generate(word)
+    plt.figure()
+    plt.imshow(word_cloud, interpolation="bilinear")
+    plt.axis('off')
+    plt.show()
+
+    #closing file object
+    f.close()
 
 
 
@@ -366,13 +466,12 @@ def start_bot():
         print "b. Retrieve details of a user\n"
         print "c. Retrieve your own recent posts\n"
         print "d. Retrieve the recent post of an user\n"
-        print "e. Retrieve your recently liked post\n"
+        print "e. Retrieve the post recently liked by you\n"
         print "f. Like a recent post\n"
         print "g. Make a comment on a recent post\n"
-        print "h. Retrieve user's interest\n"
+        print "h. Plot word cloud based on user's interest\n"
         print "i. Retrieve the list of comments\n"
         print "j. Exit\n"
-
 
         #accept user input
         choice = raw_input("Enter you choice: ")
@@ -381,48 +480,64 @@ def start_bot():
         if choice == "a":
             #print the details of your own account
             self_info()
+
         #if user chooses option (b)
         elif choice == "b":
             #accept username from the user
             insta_username = raw_input("Enter the username of the user: ")
             #display the user details
             get_user_info(insta_username)
+
         #if user chooses option (c)
         elif choice =="c":
             #retrieve your recent post
             get_own_post()
+
         #if user chooses option (d)
         elif choice == "d":
             #accept username from the user
             insta_username = raw_input("Enter the username of the user: ")
             #retrieve the most recent post of another user
             get_users_post(insta_username)
+
         #if user chooses option (e)
         elif choice == "e":
             #retrieve the liked media
             media_liked()
+
         #if user chooses option (f)
         elif choice == "f":
             #accept the name from the user
             insta_username = raw_input("Enter the username: ")
             #like a post
             like_a_post(insta_username)
+
         #if user chooses option (g)
         elif choice == "g":
             #accept the name from the user
             insta_username = raw_input("Enter the username: ")
             #post a comment
             post_a_comment(insta_username)
+
+        #if user chooses option (h)
         elif choice == "h":
-            insta_username = raw_input("Enter the username: ")
-            get_user_interest(insta_username)
+            #ask for username from the user
+            #insta_username = raw_input("Enter the username: ")
+            #get user intersest
+            get_user_interest()
+
+        #if user chooses option (i)
         elif choice == "i":
+            # ask for username from the user
             insta_username = raw_input("Enter the username: ")
+            #display the comment list
             get_comment_list(insta_username)
+
         #if user chooses option (j)
         elif choice == "j":
             #terminate the project processing
             exit()
+
         #if user chooses any other option
         else:
             #print the message that the choice is invalid
